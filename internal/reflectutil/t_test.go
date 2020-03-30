@@ -56,6 +56,8 @@ func TestConvert_basicTypes(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Panics(t, func() { t1.Convert(reflect.ValueOf(src)) })
+		assert.False(t, t1.Check(reflect.TypeOf(src)))
+
 	}
 
 	// Check that numbers with the same kind group can be converted to a bigger bits number and
@@ -126,6 +128,7 @@ func TestConvert_failures(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.Panics(t, func() { t1.Convert(reflect.ValueOf(tt.src)) })
+			assert.False(t, t1.Check(reflect.TypeOf(tt.src)))
 		})
 	}
 }

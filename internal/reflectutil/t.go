@@ -46,8 +46,7 @@ loop:
 }
 
 // Convert returns the given value as T. If the conversion is not possible, it returns false as the
-// second argument.
-// Before calling Convert, the v.Type() should be checked with Check().
+// second argument. It panics when the value can't be converted.
 func (t T) Convert(v reflect.Value) reflect.Value {
 	ok := t.convert(v.Type(), &v)
 	if !ok {
