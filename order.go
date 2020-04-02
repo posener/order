@@ -1,23 +1,28 @@
-// Package order enables more readable and easier comparison tasks.
+// Package order enables easier ordering and comparison tasks.
 //
-// This package provides easy value comparisons tasks (see list below) using a given three-way
-// comparison function of the form `func(T, T) int`.
-// (three-way comparison) https://en.wikipedia.org/wiki/Three-way_comparison.
+// This package provides functionality to easily define and apply order on values. It works out of
+// the box for most primitive types and their pointer versions, and enable order of any object using
+// (three-way comparison) https://en.wikipedia.org/wiki/Three-way_comparison with a given
+// `func(T, T) int` function, or by implementing the generic interface: `func (T) Compare(T) int`.
 //
-// * [X] Condition: get a comparable object for more readable code.
+// Supported Tasks:
 //
-// * [x] Sort - sort a slice.
+// * [x] `Sort` / `SortStable` - sort a slice.
 //
-// * [x] Search - binary search for a value in a slice.
+// * [x] `Search` - binary search for a value in a slice.
 //
-// * [x] MinMax - get minimal and maximal values of a slice.
+// * [x] `MinMax` - get indices of minimal and maximal values of a slice.
 //
-// + [x] Select - get the K'th greatest value of a slice.
+// * [X] `Is` - get a comparable object for more readable code.
 //
-// * [x] IsSorted / IsStrictSorted - check if a slice is sorted.
+// + [x] `Select` - get the K'th greatest value of a slice.
 //
-// The order library allowes sensible type conversions. A type `U` can be used in order function
-// of `T` in the following cases:
+// * [x] `IsSorted` / `IsStrictSorted` - check if a slice is sorted.
+//
+// Types and Values
+//
+// Order between values can be more forgiving than strict comparison. This library allows sensible
+// type conversions. A type `U` can be used in order function of type `T` in the following cases:
 //
 // * `U` is a pointer (or pointers chain) to a `T`.
 //
@@ -30,24 +35,21 @@
 //
 // * `U` and `T` are assignable structs.
 //
-// The Go standard library provides some comparison functions, like `strings.Compare`,
-// `bytes.Compare`, `(time.Time).After`, and so forth. Using these functions is not that readable as
-// using operators such as `==`, `>`, etc. This library provides some helper functions that makes
-// Go code more readable.
+// Usage
 //
-// 	 // Compare strings:
-// 	-if strings.Compare("a", "b") < 0 { ... }
-// 	+if order.Is("a").Less("b") { ... }
+// Using this library might be less type safe - because of the usage of interfaces API, and less
+// efficient - because of the use of reflection. On the other hand, this library reduce chances for
+// errors by providing a well tested code and more readable code. See below how some order tasks
+// can be translated to be used by this library.
 //
-// 	 // Compare times:
-// 	-if (a.After(b) || a.Equal(b)) && a.Before(c) { ... }
-// 	+if is := order.Is(a); is.GreaterEqual(b) && is.Less(c) { ... }
-//
-// 	 // Sort persons (by name and then by age)
 // 	 type person struct {
 // 	 	name string
 // 	 	age  int
 // 	 }
+//
+// 	 var persons []person
+//
+// 	 // Sort persons (by name and then by age)
 // 	-lessPersons := func(i, j int) bool {
 // 	-	nameCmp := strings.Compare(persons[i].name, "joe")
 // 	-	if nameCmp == 0 {
@@ -77,13 +79,15 @@
 // 	-}
 // 	+i := orderPersons.Search(persons, person{name: "joe", age: 42})
 //
-// If person was to implement:
+// 	 // Another way is that person will implement a `Compare(T) int` method, and the order object
+// 	 // will know how to handle it:
+// 	+func (p person) Compare(other person) int { ... }
+// 	+order.Search(persons, person{name: "joe", age: 42})
 //
-// 	func (p person) Compare(other person) int { ... }
-//
-// Order will use the comparison function when functions are called. For example:
-//
-// 	order.Sort(persons)
+// 	 // Conditions can also be defined on comparable types:
+// 	 var t, start, end time.Time
+// 	-if (t.After(start) || t.Equal(start)) && t.Before(end) { ... }
+// 	+if isT := order.Is(t); isT.GreaterEqual(start) && isT.Less(end) { ... }
 package order
 
 import (
