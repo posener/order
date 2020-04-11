@@ -1,30 +1,33 @@
 # order
 
-[![Build Status](https://travis-ci.org/posener/order.svg?branch=master)](https://travis-ci.org/posener/order)
 [![codecov](https://codecov.io/gh/posener/order/branch/master/graph/badge.svg)](https://codecov.io/gh/posener/order)
-[![GoDoc](https://godoc.org/github.com/posener/order?status.svg)](http://godoc.org/github.com/posener/order)
-[![goreadme](https://goreadme.herokuapp.com/badge/posener/order.svg)](https://goreadme.herokuapp.com)
+[![GoDoc](https://img.shields.io/badge/pkg.go.dev-doc-blue)](http://pkg.go.dev/github.com/posener/order)
 
-Package order enables more readable and easier comparison tasks.
+Package order enables easier ordering and comparison tasks.
 
-This package provides easy value comparisons tasks (see list below) using a given three-way
-comparison function of the form `func(T, T) int`.
-[three-way comparison](https://en.wikipedia.org/wiki/Three-way_comparison).
+This package provides functionality to easily define and apply order on values. It works out of
+the box for most primitive types and their pointer versions, and enable order of any object using
+[three-way comparison](https://en.wikipedia.org/wiki/Three-way_comparison) with a given
+`func(T, T) int` function, or by implementing the generic interface: `func (T) Compare(T) int`.
 
-* [X] Condition: get a comparable object for more readable code.
+Supported Tasks:
 
-* [x] Sort - sort a slice.
+* [x] `Sort` / `SortStable` - sort a slice.
 
-* [x] Search - binary search for a value in a slice.
+* [x] `Search` - binary search for a value in a slice.
 
-* [x] MinMax - get minimal and maximal values of a slice.
+* [x] `MinMax` - get indices of minimal and maximal values of a slice.
 
-+ [x] Select - get the K'th greatest value of a slice.
+* [X] `Is` - get a comparable object for more readable code.
 
-* [x] IsSorted / IsStrictSorted - check if a slice is sorted.
++ [x] `Select` - get the K'th greatest value of a slice.
 
-The order library allowes sensible type conversions. A type `U` can be used in order function
-of `T` in the following cases:
+* [x] `IsSorted` / `IsStrictSorted` - check if a slice is sorted.
+
+## Types and Values
+
+Order between values can be more forgiving than strict comparison. This library allows sensible
+type conversions. A type `U` can be used in order function of type `T` in the following cases:
 
 * `U` is a pointer (or pointers chain) to a `T`.
 
@@ -37,25 +40,22 @@ number is less or equal to `T`'s bits number.
 
 * `U` and `T` are assignable structs.
 
-The Go standard library provides some comparison functions, like `strings.Compare`,
-`bytes.Compare`, `(time.Time).After`, and so forth. Using these functions is not that readable as
-using operators such as `==`, `>`, etc. This library provides some helper functions that makes
-Go code more readable.
+## Usage
+
+Using this library might be less type safe - because of the usage of interfaces API, and less
+efficient - because of the use of reflection. On the other hand, this library reduce chances for
+errors by providing a well tested code and more readable code. See below how some order tasks
+can be translated to be used by this library.
 
 ```diff
- // Compare strings:
--if strings.Compare("a", "b") < 0 { ... }
-+if order.Is("a").Less("b") { ... }
-
- // Compare times:
--if (a.After(b) || a.Equal(b)) && a.Before(c) { ... }
-+if is := order.Is(a); is.GreaterEqual(b) && is.Less(c) { ... }
-
- // Sort persons (by name and then by age)
  type person struct {
  	name string
  	age  int
  }
+
+ var persons []person
+
+ // Sort persons (by name and then by age)
 -lessPersons := func(i, j int) bool {
 -	nameCmp := strings.Compare(persons[i].name, "joe")
 -	if nameCmp == 0 {
@@ -84,21 +84,19 @@ Go code more readable.
 -	i := -1
 -}
 +i := orderPersons.Search(persons, person{name: "joe", age: 42})
+
+ // Another way is that person will implement a `Compare(T) int` method, and the order object
+ // will know how to handle it:
++func (p person) Compare(other person) int { ... }
++order.Search(persons, person{name: "joe", age: 42})
+
+ // Conditions can also be defined on comparable types:
+ var t, start, end time.Time
+-if (t.After(start) || t.Equal(start)) && t.Before(end) { ... }
++if isT := order.Is(t); isT.GreaterEqual(start) && isT.Less(end) { ... }
 ```
 
-If person was to implement:
-
-```go
-func (p person) Compare(other person) int { ... }
-```
-
-Order will use the comparison function when functions are called. For example:
-
-```go
-order.Sort(persons)
-```
-
-#### Examples
+## Examples
 
 A simple example that shows how to use the order library with different basic types.
 
@@ -121,10 +119,9 @@ if is := Is(3); is.GreaterEqual(3) && is.Less(4) {
 now > one-second-ago ? true
 foo == bar ? false
 3 is in [3,4)
-
 ```
 
-##### Comparable
+### Comparable
 
 A type may implement a `func (t T) Compare(other T) int` function. In this case it could be just
 used with the order package functions.
@@ -139,10 +136,9 @@ fmt.Println(oranges)
 
 ```
 [2 5 24]
-
 ```
 
-##### Complex
+### Complex
 
 An example of ordering struct with multiple fields with different priorities.
 
@@ -176,10 +172,9 @@ fmt.Println("Index of {Foo 10}:", orderPersons.Search(list, person{"Foo", 10}))
 ```
 Reversed: [{Foo 10} {Bar 11} {Bar 10}]
 Index of {Foo 10}: 0
-
 ```
 
-##### SliceOperations
+### SliceOperations
 
 ```golang
 // The order function can be used to sort lists:
@@ -206,10 +201,7 @@ Sorted: [1 2 3]
 Index of 2: 1
 Min: 1, max: 3
 Median: 2
-
 ```
 
-
 ---
-
-Created by [goreadme](https://github.com/apps/goreadme)
+Readme created from Go doc with [goreadme](https://github.com/posener/goreadme)
