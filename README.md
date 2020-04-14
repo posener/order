@@ -40,6 +40,8 @@ number is less or equal to `T`'s bits number.
 
 * `U` and `T` are assignable structs.
 
+Read more about this package in this [blog post](https://posener.github.io/order).
+
 ## Usage
 
 Using this library might be less type safe - because of the usage of interfaces API, and less
