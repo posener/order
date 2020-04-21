@@ -10,37 +10,6 @@ import (
 	"github.com/posener/order/internal/reflectutil"
 )
 
-// Convenient comparison function for standard types.
-var (
-// cmpInts    fn3way = func(a, b reflect.Value) int { return a.Interface().(int) - b.Interface().(int) }
-// cmpStrings fn3way = func(a, b reflect.Value) int { return strings.Compare(a.Interface().(string), b.Interface().(string)) }
-// cmpBytes   fn3way = func(a, b reflect.Value) int { return bytes.Compare(a.Interface().([]byte), b.Interface().([]byte)) }
-// cmpBools   fn3way = func(a, b reflect.Value) int {
-// 	aa := a.Interface().(bool)
-// 	bb := b.Interface().(bool)
-// 	switch {
-// 	case aa == bb:
-// 		return 0
-// 	case aa:
-// 		return 1
-// 	default:
-// 		return -1
-// 	}
-// }
-// cmpTimes fn3way = func(a, b reflect.Value) int {
-// 	aa := a.Interface().(time.Time)
-// 	bb := b.Interface().(time.Time)
-// 	switch {
-// 	case aa.Equal(bb):
-// 		return 0
-// 	case aa.After(bb):
-// 		return 1
-// 	default:
-// 		return -1
-// 	}
-// }
-)
-
 // Is returns a Condition<T> for type T the implements a `func (T) Compare(T) int`.  It panics if
 // value does not implement the compare function.
 func Is(value interface{}) Condition {
